@@ -1,104 +1,91 @@
-import estoque.itens_estoque as itens_estoque
+import estoque.itens_estoque as itens_estoque # Importando o seu módulo de estoque
 
 carrinho = []
 total_conta = 0.0
 
-print(f"-----Bem-Vindo à Cafeteria Inteligente!-----")
-
+print("----- Bem-Vindo à Cafeteria Inteligente! -----")
 
 while True:
-
-    print(f"""
-          Menu de Seleção:
-          1. Ver Menu de Cafés
-          2. Ver Carrinho e Finalizar Compra
-          3. Sair
-          4. Ver Estoque
-          """)
-    escolha = input("Digite o numero da opção desejada:...").strip()
+    print("\n=========================")
+    print("      MENU PRINCIPAL      ")
+    print("=========================")
+    print("1. Ver Menu de Cafés")
+    print("2. Ver Carrinho e Finalizar Compra")
+    print("3. Sair")
+    print("4. Ver Estoque (Admin)")
+    
+    escolha = input("\nDigite o número da opção desejada: ").strip()
 
     if escolha == "1":
-        # Exibir menu de cafes/ Precos
-        for cafe, quantidade in itens_estoque.estoque.items():
-            if itens_estoque.estoque[cafe] > 0:
-                print(f""" 
-                      ------ Cafes disponiveis: ------
-                      Selecione o numero do cafe que deseja adicionar ao carrinho:
-                      1. Cappuccino - R${itens_estoque.precos['Cappuccino']:.2f}
-                      2. Latte - R${itens_estoque.precos['Latte']:.2f}
-                      3. Espresso - R${itens_estoque.precos['Espresso']:.2f}
-                      4. Mocha - R${itens_estoque.precos['Mocha']:.2f}
-                      v - Voltar ao menu
-                      """)
+        # Criamos um loop interno exclusivo para o menu de cafés. 
+        # Assim, o 'break' aqui dentro apenas VOLTA para o menu principal!
+        while True:
+            print("\n------ CAFÉS DISPONÍVEIS ------")
+            # Exibe os cafés dinamicamente com base no estoque real e no que já está no carrinho
+            for cafe, qtd_total in itens_estoque.estoque.items():
+                qtd_disponivel = qtd_total - carrinho.count(cafe)
+                print(f"- {cafe}: R$ {itens_estoque.precos[cafe]:.2f} ({qtd_disponivel} unid. disponíveis)")
+            
+            print("\n[1] Cappuccino | [2] Latte | [3] Espresso | [4] Mocha | [V] Voltar ao Menu Principal")
+            opcao = input("\nEscolha o café desejado ou digite 'V': ").strip().lower()
+            if opcao == "v":
+                print("Saiu com sucesso do menu")
+                break
 
-                opcao = input(
-                    "Escolha o cafe que deseja e digite Voltar(para retornar ao menu) ou Carrinho (Para ver o carrinho)").lower()
-
-                if opcao == "1":
-                    cafe = "Cappuccino"
-                    carrinho.append(cafe)
-                    total_conta += itens_estoque.precos[cafe]
-                    itens_estoque.estoque[cafe] -= 1
-                    print(f"🍫 1. {cafe} adicionado ao carrinho.")
-
-                elif opcao == "2":
-                    cafe = "Latte"
-                    carrinho.append(cafe)
-                    total_conta += itens_estoque.precos[cafe]
-                    itens_estoque.estoque[cafe] -= 1
-                    print(f"🥛 1. {cafe} adicionado ao carrinho.")
-
-                elif opcao == "3":
-                    cafe = "Espresso"
-                    carrinho.append(cafe)
-                    total_conta += itens_estoque.precos[cafe]
-                    itens_estoque.estoque[cafe] -= 1
-                    print(f"☕ 1. {cafe} adicionado ao carrinho.")
-
-                elif opcao == "4":
-                    cafe = "Mocha"
-                    carrinho.append(cafe)
-                    total_conta += itens_estoque.precos[cafe]
-                    itens_estoque.estoque[cafe] -= 1
-                    print(f"🥐 1. {cafe} adicionado ao carrinho.")
-
-                elif opcao == "v":
-                    break
-
+            # Mapeamento da escolha do usuário para o nome do café
+            cafes_mapeados = {"1": "Cappuccino", "2": "Latte", "3": "Espresso", "4": "Mocha"}
+            
+            if opcao in cafes_mapeados:
+                nome_cafe = cafes_mapeados[opcao]
+                
+                # Validação usando sua lógica de estoque temporário/disponível
+                if (itens_estoque.estoque[nome_cafe] - carrinho.count(nome_cafe)) > 0:
+                    carrinho.append(nome_cafe)
+                    total_conta += itens_estoque.precos[nome_cafe]
+                    print(f"✅ {nome_cafe} adicionado ao carrinho!")
                 else:
-                    print("Opção inválida. Por favor, escolha novamente.")
+                    print(f"❌ Desculpe, o estoque de {nome_cafe} esgotou para este pedido!")
+                
+            else:
+                print("❌ Opção inválida. Escolha de 1 a 4, ou 'v' para voltar.")
 
     elif escolha == "2":
-        # Exibir o carrinho e o total da conta
-        print("---- Carrinho: ----")
-        for cafe in carrinho:
-            print(f"{cafe}: R${itens_estoque.precos[cafe]:.2f}")
-        print(f"Total a Pagar: R${total_conta:.2f}")
+        print("\n---- SEU CARRINHO ----")
+        if not carrinho:
+            print("Seu carrinho está vazio!")
+        else:
+            # Lista os itens sem repetir linhas, mostrando a quantidade
+            for cafe in set(carrinho):
+                print(f"• {cafe}: {carrinho.count(cafe)} unid. (R$ {itens_estoque.precos[cafe] * carrinho.count(cafe):.2f})")
+            print(f"----------------------")
+            print(f"Total a Pagar: R$ {total_conta:.2f}")
 
-        opcao_finalizar = input(
-            "Digite Sim para finalizar a compra ou Não para voltar ao menu: ").lower()
+            opcao_finalizar = input("\nDigite 'Sim' para finalizar ou 'Não' para voltar: ").strip().lower()
 
-        if opcao_finalizar == "sim":
-            print("Compra finalizada com sucesso!")
-            carrinho.clear()
-            total_conta = 0.0
-        elif opcao_finalizar == "não" or opcao_finalizar == "nao":
-            break
+            if opcao_finalizar in ["sim", "s"]:
+                # MOMENTO 2: Agora sim, damos a baixa definitiva no estoque real!
+                for item in set(carrinho):
+                    itens_estoque.estoque[item] -= carrinho.count(item)
+                
+                print("🎉 Compra finalizada com sucesso! Seu café começará a ser preparado.")
+                carrinho.clear()
+                total_conta = 0.0
+            else:
+                print("🔄 Voltando ao menu principal. Seus itens continuam salvos no carrinho.")
 
     elif escolha == "3": 
-        print("Obrigado por visitar a Cafeteria Inteligente! Volte sempre!")
+        print("Obrigado por visitar a Cafeteria Inteligente! Volte sempre! 👋")
         break
 
     elif escolha == "4":
-        print("Acesso ao estoque requer senha de administrador.")
-        admin = input("Digite a senha de administrador para acessar o estoque: ")
+        print("\n🔒 Acesso restrito ao administrador.")
+        admin = input("Digite a senha de administrador: ").strip()
+        
         if admin == "admin123":
-            print("----- Estoque Atual -----")
+            print("\n----- ESTOQUE ATUAL REAL -----")
             for cafe, quantidade in itens_estoque.estoque.items():
-                print(f"{cafe}: {quantidade} unidades")
+                print(f"• {cafe}: {quantidade} unidades")
         else:
-            print("Senha incorreta. Acesso negado.")
-        break
+            print("❌ Senha incorreta. Acesso negado.")
     else:
-        print("Opção inválida. Por favor, escolha novamente.")
-
+        print("❌ Opção inválida no menu principal. Escolha de 1 a 4.")
